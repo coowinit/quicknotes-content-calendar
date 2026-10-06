@@ -1,0 +1,485 @@
+/********************************
+ * 顶部工具条：上一月 / 下一月 + 范围标签
+ ********************************/
+ .qn-content-calendar .qncc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .5rem;
+  gap: .5rem;
+}
+
+.qn-content-calendar .qncc-nav-btn {
+  border: 1px solid #d0d7e2;
+  background: #e9e9e9;
+  border-radius: 999px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition:
+    background-color .15s ease,
+    border-color .15s ease,
+    color .15s ease,
+    opacity .15s ease;
+}
+
+.qn-content-calendar .qncc-nav-btn:hover:not(:disabled) {
+  background-color: #c9c9c9;
+  border-color: #afafaf;
+  color: #fff;
+}
+
+.qn-content-calendar .qncc-nav-btn:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.qn-content-calendar .qncc-current-label {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/********************************
+ * 外层容器（可选）
+ ********************************/
+ .qn-content-calendar {
+    position: relative;    /* 为后续 z-index 提供基准 */
+    z-index: 1;
+    overflow: visible;     /* 允许 tooltip 溢出 */
+  }
+  
+  /********************************
+   * 日历基础表格
+   ********************************/
+  .qn-content-calendar .custom-calendar,
+  .custom-calendar {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 0 0 1.5rem 0;
+    font-size: 13px;
+    border-spacing: 0;
+  }
+  
+  /* 月份标题 */
+  .qn-content-calendar .custom-calendar caption,
+  .custom-calendar caption {
+    caption-side: top;
+    text-align: left;
+    font-weight: 600;
+    margin-bottom: .5rem;
+  }
+  
+  /* 星期标题行 */
+  .qn-content-calendar .custom-calendar thead th,
+  .custom-calendar thead th {
+    padding: .35rem 0;
+    text-align: center;
+    font-weight: 500;
+    color: #999;
+    border: 1px solid #dbdbdb !important;
+  }
+  
+  /* 单元格 */
+  .qn-content-calendar .custom-calendar td,
+  .custom-calendar td {
+    height: 52px;          /* 每格高度一致 */
+    padding: 2px;
+    vertical-align: middle;
+    border-bottom: 1px solid #dbdbdb !important;
+  }
+  
+  /********************************
+   * 每一天的容器
+   ********************************/
+  .qn-content-calendar .event-day-box,
+  .custom-calendar .event-day-box {
+    position: relative;            /* 作为圆点 / tooltip 的定位参照 */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;           /* 日期垂直居中 */
+    justify-content: center;       /* 日期水平居中 */
+    border-radius: 10px;
+    transition:
+      background-color .18s ease,
+      box-shadow .18s ease,
+      transform .12s ease;
+    z-index: 1;                    /* 默认层级 */
+  }
+  
+  /* hover 时，把当前格子整体层级抬高，避免被同一行/下一行压住 */
+  .qn-content-calendar .event-day-box:hover,
+  .custom-calendar .event-day-box:hover,
+  .qn-content-calendar .event-day-box.is-open,
+  .custom-calendar .event-day-box.is-open {
+    background-color: #f5f7ff;
+    z-index: 20;
+  }
+  
+  /********************************
+   * 日期数字样式
+   ********************************/
+  .qn-content-calendar .calendar-day,
+  .custom-calendar .calendar-day {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 13px;
+    cursor: pointer;
+    color: #555;
+    transition:
+      background-color .18s ease,
+      color .18s ease;
+  }
+  
+  /* 今天 */
+  .qn-content-calendar .calendar-day.cur-day,
+  .custom-calendar .calendar-day.cur-day {
+    background-color: #ffebcc;
+    color: #c47c00;
+    font-weight: 700;
+  }
+  
+  /* 有文章的日期：文字稍微强调 */
+  .qn-content-calendar .event-day-box.has-post .calendar-day,
+  .custom-calendar .event-day-box.has-post .calendar-day {
+    color: #0f6fff;
+    font-weight: 600;
+  }
+  
+  /* hover 当前格子时，日期高亮为主色 */
+  .qn-content-calendar .event-day-box:hover .calendar-day,
+  .custom-calendar .event-day-box:hover .calendar-day,
+  .qn-content-calendar .event-day-box.is-open .calendar-day,
+  .custom-calendar .event-day-box.is-open .calendar-day {
+    background-color: #0f6fff;
+    color: #fff;
+  }
+  
+  /********************************
+   * 小圆点（文章数量指示器），底部的小标记：1~3 篇用 •，>=4 篇用 3+
+   ********************************/
+  .qn-content-calendar .post-count,
+  .custom-calendar .post-count {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    line-height: 1;
+    color: #0f6fff;
+    white-space: nowrap;
+  }
+
+  /* 1~3 篇：• / •• / •••，稍微拉开一点间距 */
+  .qn-content-calendar .post-count:not(.post-count-more),
+  .custom-calendar .post-count:not(.post-count-more) {
+    letter-spacing: 1px;
+  }
+
+  /* 多于 3 篇：3+ 小胶囊 */
+  .qn-content-calendar .post-count-more,
+  .custom-calendar .post-count-more {
+    padding: 1px 4px;
+    border-radius: 999px;
+    background: rgba(15,111,255,.08);
+    font-weight: 600;
+  }
+
+  /* 如果你有更多篇数，可以继续往下加 data-count=5/6... */
+  
+  /********************************
+   * tooltip 悬浮卡片
+   ********************************/
+  .qn-content-calendar .calendar-tooltip,
+  .custom-calendar .calendar-tooltip {
+    display: none;
+    position: absolute;
+    top: 100%;                    /* 在格子下方 */
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 6px;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0,0,0,.10);
+    border-radius: 6px;
+    min-width: 240px;
+    max-width: 280px;
+    font-size: 13px;
+    z-index: 30;                  /* 高于 event-day-box 自身 */
+    pointer-events: auto;         /* 可以点击里面的链接 */
+  }
+  
+  /* 小三角 */
+  .qn-content-calendar .calendar-tooltip::before,
+  .custom-calendar .calendar-tooltip::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 6px 6px 6px;
+    border-style: solid;
+    border-color: transparent transparent #999999 transparent;
+  }
+  
+  .qn-content-calendar .calendar-tooltip::after,
+  .custom-calendar .calendar-tooltip::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 5px 5px 5px;
+    border-style: solid;
+    border-color: transparent transparent #fff transparent;
+  }
+  
+  /* hover 在整个格子（包括 tooltip 本身）都显示 */
+  .qn-content-calendar .event-day-box:hover .calendar-tooltip,
+  .custom-calendar .event-day-box:hover .calendar-tooltip,
+  .qn-content-calendar .event-day-box.is-open .calendar-tooltip,
+  .custom-calendar .event-day-box.is-open .calendar-tooltip {
+    display: block;
+  }
+  
+  /* tooltip 内部内容 */
+  .qn-content-calendar .tooltip-inner,
+  .custom-calendar .tooltip-inner {
+    padding: 8px;
+    background-color: #fff;
+    max-width: none;
+  }
+  
+  .qn-content-calendar .tooltip-post-list,
+  .custom-calendar .tooltip-post-list {
+    margin: 0;
+    padding-left: 18px;
+  }
+  
+  .qn-content-calendar .tooltip-post-item,
+  .custom-calendar .tooltip-post-item {
+    margin-bottom: 4px;
+    text-align: left;
+    list-style-type: disc;
+    line-height: 1.4;
+  }
+  
+  .qn-content-calendar .tooltip-post-item a,
+  .custom-calendar .tooltip-post-item a {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .qn-content-calendar .tooltip-post-item a:hover,
+  .custom-calendar .tooltip-post-item a:hover {
+    text-decoration: underline;
+  }
+  
+  /* 状态提示文案 */
+  .qn-content-calendar .tooltip-loading,
+  .qn-content-calendar .tooltip-error,
+  .qn-content-calendar .tooltip-empty,
+  .custom-calendar .tooltip-loading,
+  .custom-calendar .tooltip-error,
+  .custom-calendar .tooltip-empty {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .qn-content-calendar .tooltip-error,
+  .custom-calendar .tooltip-error {
+    color: #d93025;
+  }
+  
+  .qn-content-calendar .tooltip-post-item::marker, .custom-calendar .tooltip-post-item::marker {
+      color: #333;
+  }
+/********************************
+ * v1.0.0：交互与边缘适配
+ ********************************/
+.qn-content-calendar button.calendar-day,
+.custom-calendar button.calendar-day {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  line-height: inherit;
+  appearance: none;
+}
+
+.qn-content-calendar button.calendar-day:focus-visible,
+.custom-calendar button.calendar-day:focus-visible,
+.qn-content-calendar .qncc-nav-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.qn-content-calendar .tooltip-align-left .calendar-tooltip,
+.custom-calendar .tooltip-align-left .calendar-tooltip {
+  left: 0;
+  transform: none;
+}
+
+.qn-content-calendar .tooltip-align-left .calendar-tooltip::before,
+.qn-content-calendar .tooltip-align-left .calendar-tooltip::after,
+.custom-calendar .tooltip-align-left .calendar-tooltip::before,
+.custom-calendar .tooltip-align-left .calendar-tooltip::after {
+  left: 18px;
+  transform: none;
+}
+
+.qn-content-calendar .tooltip-align-right .calendar-tooltip,
+.custom-calendar .tooltip-align-right .calendar-tooltip {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.qn-content-calendar .tooltip-align-right .calendar-tooltip::before,
+.qn-content-calendar .tooltip-align-right .calendar-tooltip::after,
+.custom-calendar .tooltip-align-right .calendar-tooltip::before,
+.custom-calendar .tooltip-align-right .calendar-tooltip::after {
+  right: 18px;
+  left: auto;
+  transform: none;
+}
+
+.qn-content-calendar.is-loading .qncc-calendars {
+  opacity: .65;
+  transition: opacity .15s ease;
+}
+
+/********************************
+ * v1.0.0：移动端详情面板
+ * Desktop 继续使用 tooltip；<= 767px 改为日历下方正常文档流面板。
+ ********************************/
+.qn-content-calendar .qncc-mobile-detail {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .qn-content-calendar .qncc-toolbar {
+    gap: .75rem;
+  }
+
+  .qn-content-calendar .qncc-nav-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 40px;
+  }
+
+  .qn-content-calendar .custom-calendar,
+  .custom-calendar {
+    margin-bottom: 1.5rem;
+  }
+
+  /* 手机端彻底停用格子内绝对定位 tooltip，避免左右越界和覆盖下方内容。 */
+  .qn-content-calendar .calendar-tooltip,
+  .custom-calendar .calendar-tooltip,
+  .qn-content-calendar .event-day-box:hover .calendar-tooltip,
+  .custom-calendar .event-day-box:hover .calendar-tooltip,
+  .qn-content-calendar .event-day-box.is-open .calendar-tooltip,
+  .custom-calendar .event-day-box.is-open .calendar-tooltip {
+    display: none !important;
+  }
+
+  .qn-content-calendar .event-day-box.is-mobile-selected,
+  .custom-calendar .event-day-box.is-mobile-selected {
+    background-color: #f5f7ff;
+    z-index: 2;
+  }
+
+  .qn-content-calendar .event-day-box.is-mobile-selected .calendar-day,
+  .custom-calendar .event-day-box.is-mobile-selected .calendar-day {
+    background-color: #0f6fff;
+    color: #fff;
+  }
+
+  /* 当前日期已用蓝色圆形表达选中状态，圆点不再重复显示。 */
+  .qn-content-calendar .event-day-box.is-mobile-selected .post-count,
+  .custom-calendar .event-day-box.is-mobile-selected .post-count {
+    opacity: 0;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    margin: -0.75rem 0 1.5rem;
+    padding: 12px 14px;
+    border: 1px solid #d7dce3;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,.08);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail[hidden] {
+    display: none !important;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail-heading {
+    margin: 0 0 8px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #edf0f3;
+    font-weight: 600;
+    color: #444;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail-body,
+  .qn-content-calendar .qncc-mobile-detail-body a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail .tooltip-post-list {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail .tooltip-post-item {
+    margin: 0 0 6px;
+    line-height: 1.55;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail .tooltip-post-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail .tooltip-post-item a {
+    color: #333;
+    text-decoration: none;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail .tooltip-post-item a:active,
+  .qn-content-calendar .qncc-mobile-detail .tooltip-post-item a:focus-visible {
+    text-decoration: underline;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail .tooltip-loading,
+  .qn-content-calendar .qncc-mobile-detail .tooltip-error,
+  .qn-content-calendar .qncc-mobile-detail .tooltip-empty {
+    font-size: 12px;
+    color: #888;
+  }
+
+  .qn-content-calendar .qncc-mobile-detail .tooltip-error {
+    color: #d93025;
+  }
+}
